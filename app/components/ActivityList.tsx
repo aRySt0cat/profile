@@ -1,15 +1,24 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { activities, type Activity, type ActivityType } from "../../src/data/activities";
+import {
+  activities,
+  type Activity,
+  type ActivityType,
+  type Language,
+} from "../../src/data/activities";
 
 type Filter = "all" | ActivityType;
 
-const filterOptions: { value: Filter; label: string; hash: string }[] = [
-  { value: "all", label: "All", hash: "all" },
-  { value: "book", label: "Books", hash: "books" },
-  { value: "paper", label: "Papers", hash: "papers" },
-  { value: "talk", label: "Talks", hash: "talks" },
+const filterOptions: {
+  value: Filter;
+  label: Record<Language, string>;
+  hash: string;
+}[] = [
+  { value: "all", label: { ja: "すべて", en: "All" }, hash: "all" },
+  { value: "book", label: { ja: "書籍", en: "Books" }, hash: "books" },
+  { value: "paper", label: { ja: "論文", en: "Papers" }, hash: "papers" },
+  { value: "talk", label: { ja: "登壇", en: "Talks" }, hash: "talks" },
 ];
 
 const typeLabels: Record<ActivityType, string> = {
@@ -17,6 +26,21 @@ const typeLabels: Record<ActivityType, string> = {
   paper: "PAPER",
   talk: "TALK",
 };
+
+const activityCopy = {
+  ja: {
+    filterLabel: "活動種別で絞り込む",
+    relatedLinks: "の関連リンク",
+    publisher: "出版社",
+    bookCover: "の書影",
+  },
+  en: {
+    filterLabel: "Filter activities by type",
+    relatedLinks: " — related links",
+    publisher: "Publisher",
+    bookCover: " — book cover",
+  },
+} satisfies Record<Language, Record<string, string>>;
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
@@ -46,9 +70,19 @@ function ExternalLink({ href, children }: { href: string; children: React.ReactN
   );
 }
 
-function ActivityLinks({ activity }: { activity: Activity }) {
+function ActivityLinks({
+  activity,
+  language,
+  title,
+}: {
+  activity: Activity;
+  language: Language;
+  title: string;
+}) {
+  const copy = activityCopy[language];
+
   return (
-    <div className="activity-links" aria-label={`${activity.title}の関連リンク`}>
+    <div className="activity-links" aria-label={`${title}${copy.relatedLinks}`}>
       {activity.amazon_url && <ExternalLink href={activity.amazon_url}>Amazon</ExternalLink>}
       {activity.publisher_url && <ExternalLink href={activity.publisher_url}>Publisher</ExternalLink>}
       {activity.announcement_url && <ExternalLink href={activity.announcement_url}>News</ExternalLink>}
@@ -61,7 +95,28 @@ function ActivityLinks({ activity }: { activity: Activity }) {
   );
 }
 
-function ActivityItem({ activity, index }: { activity: Activity; index: number }) {
+function ActivityItem({
+  activity,
+  index,
+  language,
+}: {
+  activity: Activity;
+  index: number;
+  language: Language;
+}) {
+  const copy = activityCopy[language];
+  const title = language === "en" ? activity.title_en ?? activity.title : activity.title;
+  const subtitle =
+    language === "en" ? activity.subtitle_en ?? activity.subtitle : activity.subtitle;
+  const authors =
+    language === "en" ? activity.authors_en ?? activity.authors : activity.authors;
+  const displayDate =
+    language === "en" ? activity.display_date_en ?? activity.display_date : activity.display_date;
+  const publisher =
+    language === "en" ? activity.publisher_en ?? activity.publisher : activity.publisher;
+  const venue = language === "en" ? activity.venue_en ?? activity.venue : activity.venue;
+  const event = language === "en" ? activity.event_en ?? activity.event : activity.event;
+
   return (
     <article className={`activity-item activity-${activity.type}`}>
       <div className="activity-rail">
@@ -70,19 +125,19 @@ function ActivityItem({ activity, index }: { activity: Activity; index: number }
       </div>
 
       <div className="activity-date">
-        <time dateTime={activity.sort_date}>{activity.display_date}</time>
+        <time dateTime={activity.sort_date}>{displayDate}</time>
       </div>
 
       <div className="activity-copy">
-        <h3>{activity.title}</h3>
-        {activity.subtitle && <p className="activity-subtitle">{activity.subtitle}</p>}
-        {activity.authors && <AuthorList authors={activity.authors} />}
+        <h3>{title}</h3>
+        {subtitle && <p className="activity-subtitle">{subtitle}</p>}
+        {authors && <AuthorList authors={authors} />}
 
         {activity.type === "book" && (
           <dl className="activity-meta">
             <div>
-              <dt>Publisher</dt>
-              <dd>{activity.publisher}</dd>
+              <dt>{copy.publisher}</dt>
+              <dd>{publisher}</dd>
             </div>
             <div>
               <dt>ISBN</dt>
@@ -93,15 +148,15 @@ function ActivityItem({ activity, index }: { activity: Activity; index: number }
 
         {activity.type === "paper" && (
           <p className="activity-venue">
-            {activity.venue}
+            {venue}
             {activity.pages ? `, pp. ${activity.pages}` : ""}
             {activity.year ? `, ${activity.year}` : ""}.
           </p>
         )}
 
-        {activity.type === "talk" && <p className="activity-event">{activity.event}</p>}
+        {activity.type === "talk" && <p className="activity-event">{event}</p>}
 
-        <ActivityLinks activity={activity} />
+        <ActivityLinks activity={activity} language={language} title={title} />
       </div>
 
       {activity.cover_image && (
@@ -109,7 +164,7 @@ function ActivityItem({ activity, index }: { activity: Activity; index: number }
           <img
             className="book-cover"
             src={`${basePath}/${activity.cover_image}`}
-            alt={`『${activity.title}』の書影`}
+            alt={language === "ja" ? `『${title}』${copy.bookCover}` : `${title}${copy.bookCover}`}
             width="360"
             height="480"
             loading="lazy"
@@ -121,8 +176,9 @@ function ActivityItem({ activity, index }: { activity: Activity; index: number }
   );
 }
 
-export function ActivityList() {
+export function ActivityList({ language }: { language: Language }) {
   const [filter, setFilter] = useState<Filter>("all");
+  const copy = activityCopy[language];
 
   useEffect(() => {
     const applyHash = () => {
@@ -158,7 +214,7 @@ export function ActivityList() {
 
   return (
     <>
-      <div className="activity-controls" aria-label="活動種別で絞り込む">
+      <div className="activity-controls" aria-label={copy.filterLabel}>
         {filterOptions.map((option) => (
           <button
             key={option.value}
@@ -167,18 +223,25 @@ export function ActivityList() {
             aria-pressed={filter === option.value}
             onClick={() => selectFilter(option.value, option.hash)}
           >
-            <span>{option.label}</span>
+            <span>{option.label[language]}</span>
             <span className="filter-count">{String(counts[option.value]).padStart(2, "0")}</span>
           </button>
         ))}
         <p className="filter-status" aria-live="polite">
-          {visibleActivities.length}件
+          {language === "ja"
+            ? `${visibleActivities.length}件`
+            : `${visibleActivities.length} ${visibleActivities.length === 1 ? "item" : "items"}`}
         </p>
       </div>
 
       <div className="activity-list">
         {visibleActivities.map((activity, index) => (
-          <ActivityItem key={activity.id} activity={activity} index={index} />
+          <ActivityItem
+            key={activity.id}
+            activity={activity}
+            index={index}
+            language={language}
+          />
         ))}
       </div>
     </>

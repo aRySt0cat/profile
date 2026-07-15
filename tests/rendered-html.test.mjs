@@ -37,6 +37,9 @@ test("server-renders the complete profile", async () => {
   assert.match(html, /作ってわかる大規模言語モデルの仕組み/);
   assert.match(html, /Non-Monotonicity and Catastrophic Risk/);
   assert.match(html, /AIエージェントは何に使うべきか/);
+  assert.match(html, /LANGUAGE/);
+  assert.match(html, />JA</);
+  assert.match(html, />EN</);
   assert.match(html, /application\/ld\+json/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton/i);
 });
@@ -48,10 +51,15 @@ test("keeps activity content data-driven", async () => {
     readFile(new URL("../package.json", import.meta.url), "utf8"),
   ]);
 
-  assert.match(page, /<ActivityList \/>/);
+  assert.match(page, /<ActivityList language=\{language\} \/>/);
+  assert.match(page, /useSyncExternalStore/);
+  assert.match(page, /profile-language/);
   assert.match(data, /type: "book"/);
   assert.match(data, /type: "paper"/);
   assert.match(data, /type: "talk"/);
   assert.match(data, /sort_date/);
+  assert.match(data, /title_en/);
+  assert.match(data, /authors_en/);
+  assert.match(data, /display_date_en/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
 });

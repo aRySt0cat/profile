@@ -25,8 +25,15 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://aryst0cat.github.io/profile/"),
   title: "下垣内 隆太 | Ryuta Shimogauchi",
   description:
-    "株式会社Elith 取締役CAIO、下垣内隆太の公式プロフィール。学歴、書籍、研究論文、登壇実績、公開アカウントを掲載しています。",
+    "株式会社Elith 取締役CAIO、下垣内隆太の公式プロフィール。学歴、書籍、研究論文、登壇実績を日本語と英語で掲載しています。",
   authors: [{ name: "Ryuta Shimogauchi" }],
+  alternates: {
+    canonical: "https://aryst0cat.github.io/profile/",
+    languages: {
+      "ja-JP": "https://aryst0cat.github.io/profile/",
+      "en-US": "https://aryst0cat.github.io/profile/?lang=en",
+    },
+  },
   icons: {
     icon: "/profile/assets/profile.webp",
     shortcut: "/profile/assets/profile.webp",
@@ -34,6 +41,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "profile",
     locale: "ja_JP",
+    alternateLocale: ["en_US"],
     url: "https://aryst0cat.github.io/profile/",
     title: "下垣内 隆太 | Ryuta Shimogauchi",
     description: "株式会社Elith 取締役CAIO、下垣内隆太のプロフィールと活動実績。",
