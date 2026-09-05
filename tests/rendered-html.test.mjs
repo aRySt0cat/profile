@@ -41,7 +41,38 @@ test("server-renders the complete profile", async () => {
   assert.match(html, />JA</);
   assert.match(html, />EN</);
   assert.match(html, /application\/ld\+json/);
-  assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton/i);
+  assert.doesNotMatch(
+    html,
+    /codex-preview|Your site is taking shape|react-loading-skeleton/i,
+  );
+  assert.doesNotMatch(
+    html,
+    /知は、|Always becoming|Layers of understanding|Knowledge in circulation|SCROLL TO EVOLVE|archive-section/,
+  );
+  const data = await readFile(
+    new URL("../src/data/activities.ts", import.meta.url),
+    "utf8",
+  );
+  const activityIds = [...data.matchAll(/id: "([^"]+)"/g)].map(
+    (match) => match[1],
+  );
+  for (const id of activityIds) assert.ok(html.includes(`id="${id}"`), id);
+  const contents = html.match(
+    /<section[^>]*id="activities"[\s\S]*?<\/section>/,
+  )?.[0];
+  assert.ok(contents, "Activities has its own contents spread");
+  assert.match(contents, /目次/);
+  for (const id of activityIds)
+    assert.ok(contents.includes(`href="#${id}"`), `contents link: ${id}`);
+  assert.equal(
+    (html.match(/class="contents-back"/g) ?? []).length,
+    activityIds.length,
+  );
+
+  assert.equal(
+    (html.match(/data-spread="/g) ?? []).length,
+    activityIds.length + 3,
+  );
 });
 
 test("keeps activity content data-driven", async () => {
@@ -51,7 +82,7 @@ test("keeps activity content data-driven", async () => {
     readFile(new URL("../package.json", import.meta.url), "utf8"),
   ]);
 
-  assert.match(page, /<ActivityList language=\{language\} \/>/);
+  assert.match(page, /<ActivitySpread/);
   assert.match(page, /useSyncExternalStore/);
   assert.match(page, /profile-language/);
   assert.match(data, /type: "book"/);

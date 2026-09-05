@@ -61,9 +61,20 @@ function AuthorList({ authors }: { authors: string[] }) {
   );
 }
 
-function ExternalLink({ href, children }: { href: string; children: React.ReactNode }) {
+function ExternalLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
   return (
-    <a className="text-link" href={href} target="_blank" rel="noreferrer noopener">
+    <a
+      className="text-link"
+      href={href}
+      target="_blank"
+      rel="noreferrer noopener"
+    >
       <span>{children}</span>
       <span aria-hidden="true">↗</span>
     </a>
@@ -83,14 +94,32 @@ function ActivityLinks({
 
   return (
     <div className="activity-links" aria-label={`${title}${copy.relatedLinks}`}>
-      {activity.amazon_url && <ExternalLink href={activity.amazon_url}>Amazon</ExternalLink>}
-      {activity.publisher_url && <ExternalLink href={activity.publisher_url}>Publisher</ExternalLink>}
-      {activity.announcement_url && <ExternalLink href={activity.announcement_url}>News</ExternalLink>}
-      {activity.paper_url && <ExternalLink href={activity.paper_url}>Paper</ExternalLink>}
-      {activity.doi && <ExternalLink href={`https://doi.org/${activity.doi}`}>DOI</ExternalLink>}
-      {activity.slides_url && <ExternalLink href={activity.slides_url}>Slides</ExternalLink>}
-      {activity.event_url && <ExternalLink href={activity.event_url}>Event</ExternalLink>}
-      {activity.video_url && <ExternalLink href={activity.video_url}>Video</ExternalLink>}
+      {activity.amazon_url && (
+        <ExternalLink href={activity.amazon_url}>Amazon</ExternalLink>
+      )}
+      {activity.publisher_url && (
+        <ExternalLink href={activity.publisher_url}>Publisher</ExternalLink>
+      )}
+      {activity.announcement_url && (
+        <ExternalLink href={activity.announcement_url}>News</ExternalLink>
+      )}
+      {activity.paper_url && (
+        <ExternalLink href={activity.paper_url}>Paper</ExternalLink>
+      )}
+      {activity.doi && (
+        <ExternalLink href={`https://doi.org/${activity.doi}`}>
+          DOI
+        </ExternalLink>
+      )}
+      {activity.slides_url && (
+        <ExternalLink href={activity.slides_url}>Slides</ExternalLink>
+      )}
+      {activity.event_url && (
+        <ExternalLink href={activity.event_url}>Event</ExternalLink>
+      )}
+      {activity.video_url && (
+        <ExternalLink href={activity.video_url}>Video</ExternalLink>
+      )}
     </div>
   );
 }
@@ -105,22 +134,35 @@ function ActivityItem({
   language: Language;
 }) {
   const copy = activityCopy[language];
-  const title = language === "en" ? activity.title_en ?? activity.title : activity.title;
+  const title =
+    language === "en" ? (activity.title_en ?? activity.title) : activity.title;
   const subtitle =
-    language === "en" ? activity.subtitle_en ?? activity.subtitle : activity.subtitle;
+    language === "en"
+      ? (activity.subtitle_en ?? activity.subtitle)
+      : activity.subtitle;
   const authors =
-    language === "en" ? activity.authors_en ?? activity.authors : activity.authors;
+    language === "en"
+      ? (activity.authors_en ?? activity.authors)
+      : activity.authors;
   const displayDate =
-    language === "en" ? activity.display_date_en ?? activity.display_date : activity.display_date;
+    language === "en"
+      ? (activity.display_date_en ?? activity.display_date)
+      : activity.display_date;
   const publisher =
-    language === "en" ? activity.publisher_en ?? activity.publisher : activity.publisher;
-  const venue = language === "en" ? activity.venue_en ?? activity.venue : activity.venue;
-  const event = language === "en" ? activity.event_en ?? activity.event : activity.event;
+    language === "en"
+      ? (activity.publisher_en ?? activity.publisher)
+      : activity.publisher;
+  const venue =
+    language === "en" ? (activity.venue_en ?? activity.venue) : activity.venue;
+  const event =
+    language === "en" ? (activity.event_en ?? activity.event) : activity.event;
 
   return (
     <article className={`activity-item activity-${activity.type}`}>
       <div className="activity-rail">
-        <span className="activity-number">{String(index + 1).padStart(2, "0")}</span>
+        <span className="activity-number">
+          {String(index + 1).padStart(2, "0")}
+        </span>
         <span className="activity-type">{typeLabels[activity.type]}</span>
       </div>
 
@@ -164,7 +206,11 @@ function ActivityItem({
           <img
             className="book-cover"
             src={`${basePath}/${activity.cover_image}`}
-            alt={language === "ja" ? `『${title}』${copy.bookCover}` : `${title}${copy.bookCover}`}
+            alt={
+              language === "ja"
+                ? `『${title}』${copy.bookCover}`
+                : `${title}${copy.bookCover}`
+            }
             width="360"
             height="480"
             loading="lazy"
@@ -203,7 +249,9 @@ export function ActivityList({ language }: { language: Language }) {
   );
 
   const visibleActivities =
-    filter === "all" ? activities : activities.filter((item) => item.type === filter);
+    filter === "all"
+      ? activities
+      : activities.filter((item) => item.type === filter);
 
   const selectFilter = (nextFilter: Filter, hash: string) => {
     setFilter(nextFilter);
@@ -224,7 +272,9 @@ export function ActivityList({ language }: { language: Language }) {
             onClick={() => selectFilter(option.value, option.hash)}
           >
             <span>{option.label[language]}</span>
-            <span className="filter-count">{String(counts[option.value]).padStart(2, "0")}</span>
+            <span className="filter-count">
+              {String(counts[option.value]).padStart(2, "0")}
+            </span>
           </button>
         ))}
         <p className="filter-status" aria-live="polite">
@@ -243,6 +293,130 @@ export function ActivityList({ language }: { language: Language }) {
             language={language}
           />
         ))}
+      </div>
+    </>
+  );
+}
+
+export function ActivitySpread({
+  activity,
+  language,
+  index,
+  total,
+  onBackToContents,
+}: {
+  activity: Activity;
+  language: Language;
+  index: number;
+  total: number;
+  onBackToContents: () => void;
+}) {
+  const copy = activityCopy[language];
+  const title =
+    language === "en" ? (activity.title_en ?? activity.title) : activity.title;
+  const subtitle =
+    language === "en"
+      ? (activity.subtitle_en ?? activity.subtitle)
+      : activity.subtitle;
+  const authors =
+    language === "en"
+      ? (activity.authors_en ?? activity.authors)
+      : activity.authors;
+  const displayDate =
+    language === "en"
+      ? (activity.display_date_en ?? activity.display_date)
+      : activity.display_date;
+  const publisher =
+    language === "en"
+      ? (activity.publisher_en ?? activity.publisher)
+      : activity.publisher;
+  const venue =
+    language === "en" ? (activity.venue_en ?? activity.venue) : activity.venue;
+  const event =
+    language === "en" ? (activity.event_en ?? activity.event) : activity.event;
+  const category = {
+    book: { ja: "書籍", en: "Book" },
+    paper: { ja: "論文", en: "Paper" },
+    talk: { ja: "登壇", en: "Talk" },
+  }[activity.type][language];
+  return (
+    <>
+      <div className="paper-page page-left">
+        <div className="page-inner" tabIndex={0}>
+          <div className="activity-heading">
+            <p className="page-label">
+              Activities <span>— {category}</span>
+            </p>
+            <a
+              className="contents-back"
+              href="#activities"
+              onClick={(event) => {
+                event.preventDefault();
+                onBackToContents();
+              }}
+            >
+              {language === "ja" ? "← 目次へ" : "← Contents"}
+            </a>
+          </div>
+          <time className="activity-date" dateTime={activity.sort_date}>
+            {displayDate}
+          </time>
+          <h2 id={`${activity.id}-title`} className="activity-title">
+            {title}
+          </h2>
+          {subtitle && <p className="activity-subtitle">{subtitle}</p>}
+          {activity.cover_image && (
+            <img
+              className="book-cover"
+              src={`${basePath}/${activity.cover_image}`}
+              alt={
+                language === "ja"
+                  ? `『${title}』${copy.bookCover}`
+                  : `${title}${copy.bookCover}`
+              }
+              width="120"
+              height="160"
+              loading="lazy"
+              decoding="async"
+            />
+          )}
+        </div>
+      </div>
+      <div className="paper-page page-right">
+        <div className="page-inner activity-details" tabIndex={0}>
+          {authors && <AuthorList authors={authors} />}
+          {activity.type === "book" && (
+            <dl className="activity-meta">
+              <div>
+                <dt>{copy.publisher}</dt>
+                <dd>{publisher}</dd>
+              </div>
+              <div>
+                <dt>ISBN</dt>
+                <dd>{activity.isbn}</dd>
+              </div>
+            </dl>
+          )}
+          {activity.type === "paper" && (
+            <p className="activity-venue">
+              {venue}
+              {activity.pages ? `, pp. ${activity.pages}` : ""}
+              {activity.year ? `, ${activity.year}` : ""}.
+            </p>
+          )}
+          {activity.type === "talk" && (
+            <p className="activity-event">{event}</p>
+          )}
+          <ActivityLinks
+            activity={activity}
+            language={language}
+            title={title}
+          />
+          <p className="activity-index">
+            {String(index + 1).padStart(2, "0")} /{" "}
+            {String(total).padStart(2, "0")}
+          </p>
+        </div>
       </div>
     </>
   );
