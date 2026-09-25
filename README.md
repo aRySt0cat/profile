@@ -6,9 +6,9 @@
 
 活動情報は `src/data/activities.ts` にまとまっています。書籍・論文・登壇の追加は、このファイルへの追記で反映できます。
 
-スクロールに合わせて白い本のページをめくり、プロフィール・学歴・全活動を同じ紙面で表示します。Activitiesは目次から各詳細へ移動でき、詳細から目次へ戻れます。活動フィルターに応じて目次とページ数も変わります。時間軸の定義は `app/lib/narrative.ts`、3Dの演出は `app/components/PaperSculpture.tsx` にあります。Blenderの編集用データは `assets/sculpture/` に保存しています。
+ページはプロフィール、Activities、Education の順に通常の縦スクロールで読めます。Activities は種別で絞り込め、`#books` `#papers` `#talks` や各活動の `id` へのリンクにも対応しています。学歴は `src/data/profile.ts`、日付表記やリンクの整形は `app/lib/activity.ts` にあります。
 
-「一覧で読む」で通常の文章表示に切り替えられます。動きを減らすOS設定やWebGLが利用できない場合も、文章表示になります。長いページの本文は紙面内でスクロールでき、キーボードでも操作できます。
+演出はすべて表示済みのHTMLの上に重ねています。スクロールと連動する動きは `app/lib/motion.ts` の1つのループで管理し、左余白の年表示（`app/components/Bookmark.tsx`）は各項目の `data-year` から自動で目盛りを作ります。OSの「視差効果を減らす」設定やJavaScriptが動かない環境では、動きのない状態で全文が表示されます。
 
 ## ローカル確認
 
@@ -17,4 +17,4 @@ npm ci
 npm run dev
 ```
 
-GitHub Pages 用の静的書き出しは `npm run build:pages`、通常の検証は `npm test` で実行できます。
+GitHub Pages 用の静的書き出しは `npm run build:pages`、通常の検証は `npm test`（データ整形の単体テストは `npm run test:unit`）で実行できます。

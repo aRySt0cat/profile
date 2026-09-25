@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 const personJsonLd = {
@@ -63,14 +63,34 @@ export const metadata: Metadata = {
   },
 };
 
+const fontStylesheet =
+  "https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Newsreader:ital,opsz,wght@0,6..72,200..700;1,6..72,300..500&family=Shippori+Mincho:wght@400;500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap";
+
+// Marks the document as scripted before first paint so reveal effects can
+// start hidden. If the page's scripts never start, content is shown anyway.
+const motionBootstrap = `document.documentElement.classList.add("js");setTimeout(function(){if(!document.documentElement.dataset.motion)document.documentElement.classList.remove("js")},2500);`;
+
+export const viewport: Viewport = {
+  themeColor: "#f7f8fa",
+  colorScheme: "light",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja">
+    <html lang="ja" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: motionBootstrap }} />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin=""
+        />
+        <link rel="stylesheet" href={fontStylesheet} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}

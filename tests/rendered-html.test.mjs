@@ -56,23 +56,31 @@ test("server-renders the complete profile", async () => {
   const activityIds = [...data.matchAll(/id: "([^"]+)"/g)].map(
     (match) => match[1],
   );
-  for (const id of activityIds) assert.ok(html.includes(`id="${id}"`), id);
-  const contents = html.match(
+  const works = html.match(
     /<section[^>]*id="activities"[\s\S]*?<\/section>/,
   )?.[0];
-  assert.ok(contents, "Activities has its own contents spread");
-  assert.match(contents, /目次/);
+  assert.ok(works, "Activities has its own section");
   for (const id of activityIds)
-    assert.ok(contents.includes(`href="#${id}"`), `contents link: ${id}`);
+    assert.ok(works.includes(`id="${id}"`), `activity entry: ${id}`);
   assert.equal(
-    (html.match(/class="contents-back"/g) ?? []).length,
+    (works.match(/class="work work-/g) ?? []).length,
     activityIds.length,
   );
+  for (const label of ["すべて", "書籍", "論文", "登壇"])
+    assert.match(works, new RegExp(`aria-pressed="(true|false)"[^>]*>${label}`));
 
-  assert.equal(
-    (html.match(/data-spread="/g) ?? []).length,
-    activityIds.length + 3,
-  );
+  const schools = html.match(
+    /<section[^>]*id="education"[\s\S]*?<\/section>/,
+  )?.[0];
+  assert.ok(schools, "Education has its own section");
+  for (const year of ["2020", "2017", "2012"])
+    assert.ok(schools.includes(`data-year="${year}"`), `education ${year}`);
+
+  // Every entry is readable without scripts; motion only hides content once
+  // the bootstrap script has marked the document.
+  assert.match(html, /classList\.add\("js"\)/);
+  assert.doesNotMatch(html, /<html[^>]*class="[^"]*\bjs\b/);
+  assert.doesNotMatch(html, /sculpture|open-book/);
 });
 
 test("keeps activity content data-driven", async () => {
@@ -82,7 +90,7 @@ test("keeps activity content data-driven", async () => {
     readFile(new URL("../package.json", import.meta.url), "utf8"),
   ]);
 
-  assert.match(page, /<ActivitySpread/);
+  assert.match(page, /<ActivitySection/);
   assert.match(page, /useSyncExternalStore/);
   assert.match(page, /profile-language/);
   assert.match(data, /type: "book"/);
