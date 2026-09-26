@@ -55,25 +55,50 @@ export function formatDate(activity: Activity) {
 export const activityYear = (activity: Activity) =>
   activity.sort_date.slice(0, 4);
 
-export function activityLinks(activity: Activity) {
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
+/** The page on this site that presents a talk's deck. */
+export const talkPath = (slug: string) => `${basePath}/talks/${slug}/`;
+
+/** The built deck itself, for opening it on its own. */
+export const deckPath = (slug: string, page = 1) =>
+  `${basePath}/slides/${slug}/index.html#/${page}`;
+
+export type ActivityLink = {
+  label: string;
+  href: string;
+  /** Links on this site open in place; everything else opens a new tab. */
+  internal: boolean;
+};
+
+export function activityLinks(activity: Activity): ActivityLink[] {
+  const deck = activity.deck && talkPath(activity.deck.slug);
   return [
     ["Amazon", activity.amazon_url],
     ["Publisher", activity.publisher_url],
     ["News", activity.announcement_url],
     ["Paper", activity.paper_url],
     ["DOI", activity.doi && `https://doi.org/${activity.doi}`],
-    ["Slides", activity.slides_url],
+    ["Slides", deck ?? activity.slides_url],
     ["Event", activity.event_url],
     ["Video", activity.video_url],
-  ].filter((link): link is [string, string] => Boolean(link[1]));
+  ]
+    .filter((link): link is [string, string] => Boolean(link[1]))
+    .map(([label, href]) => ({ label, href, internal: href === deck }));
 }
 
 /** The link a reader most likely wants when they choose the title itself. */
-export function primaryLink(activity: Activity) {
-  if (activity.type === "book")
-    return activity.publisher_url ?? activity.amazon_url;
-  if (activity.type === "paper") return activity.paper_url;
-  return activity.slides_url ?? activity.event_url ?? activity.video_url;
+export function primaryLink(activity: Activity): ActivityLink | undefined {
+  const links = activityLinks(activity);
+  const preferred = {
+    book: ["Publisher", "Amazon"],
+    paper: ["Paper"],
+    talk: ["Slides", "Event", "Video"],
+  }[activity.type];
+  for (const label of preferred) {
+    const link = links.find((candidate) => candidate.label === label);
+    if (link) return link;
+  }
 }
 
 export function filterForHash(hash: string) {

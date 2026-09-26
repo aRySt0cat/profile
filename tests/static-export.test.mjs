@@ -27,3 +27,27 @@ test("exports the portrait and book covers it links to", async () => {
     assert.equal(image.toString("ascii", 8, 12), "WEBP", asset);
   }
 });
+
+test("exports each talk page with its built deck", async () => {
+  const page = await readFile(
+    new URL("../out/talks/ml15min-116/index.html", import.meta.url),
+    "utf8",
+  );
+  assert.match(page, /人生の操作権限をAIに渡してみた/);
+  assert.match(page, /href="\/profile\/#talk-ml15min-116-2026"/);
+
+  const deck = await readFile(
+    new URL("../out/slides/ml15min-116/index.html", import.meta.url),
+    "utf8",
+  );
+  // Assets resolve relative to the deck, whatever path it is served from.
+  assert.match(deck, /src="\.\/assets\//);
+  const manifest = JSON.parse(
+    await readFile(
+      new URL("../out/slides/ml15min-116/deck.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  assert.equal(manifest.pages.length > 0, true);
+  assert.equal(manifest.pages[0].no, 1);
+});

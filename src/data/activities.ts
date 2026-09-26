@@ -1,6 +1,24 @@
 export type ActivityType = "book" | "paper" | "talk";
 export type Language = "ja" | "en";
 
+/**
+ * A Slidev deck published with a talk. `npm run slides` builds it from
+ * `repo` at `ref` into /slides/<slug>/, and the talk page /talks/<slug>/
+ * presents it.
+ */
+export type Deck = {
+  /** URL segment for /talks/<slug>/ and /slides/<slug>/. */
+  slug: string;
+  /** GitHub repository, as "owner/name". */
+  repo: string;
+  /** Full commit SHA to publish; update it to publish a revised deck. */
+  ref: string;
+  /** Slidev entry file, relative to the repository root. */
+  entry?: string;
+  /** Publish speaker notes too. Off by default. */
+  notes?: boolean;
+};
+
 export type Activity = {
   id: string;
   type: ActivityType;
@@ -31,9 +49,29 @@ export type Activity = {
   slides_url?: string;
   event_url?: string;
   video_url?: string;
+  deck?: Deck;
 };
 
 const activityData: Activity[] = [
+  {
+    id: "talk-ml15min-116-2026",
+    type: "talk",
+    sort_date: "2026-09-26",
+    display_date: "2026年9月26日",
+    display_date_en: "September 26, 2026",
+    title: "人生の操作権限をAIに渡してみた",
+    title_en: "Handing the Controls of My Life to AI",
+    subtitle: "パーソナルAIエージェントの現在地",
+    subtitle_en: "Where Personal AI Agents Stand Today",
+    event: "第116回 Machine Learning 15minutes! Hybrid",
+    event_en: "Machine Learning 15minutes! Hybrid #116",
+    event_url: "https://machine-learning15minutes.connpass.com/event/403438/",
+    deck: {
+      slug: "ml15min-116",
+      repo: "aRySt0cat/ml-15-min-slide-20260926",
+      ref: "4a4888b24f9c7d5b9595267daf8805b9522577c0",
+    },
+  },
   {
     id: "talk-ipros-ai-2026",
     type: "talk",

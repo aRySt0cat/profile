@@ -40,3 +40,7 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+
+# slide decks built by `npm run slides`
+/public/slides/
+/.slides-cache/

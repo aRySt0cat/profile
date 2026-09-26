@@ -12,12 +12,14 @@ const sections = [
 const copy = {
   ja: {
     top: "ページ上部へ",
+    profile: "プロフィールへ戻る",
     nav: "メインナビゲーション",
     language: "表示言語を選択",
     status: "日本語で表示中",
   },
   en: {
     top: "Back to the top of the page",
+    profile: "Back to the profile",
     nav: "Main navigation",
     language: "Select display language",
     status: "Showing the English version",
@@ -53,12 +55,17 @@ function useIndicator(
 export function SiteHeader({
   language,
   onLanguage,
+  home,
 }: {
   language: Language;
   onLanguage: (language: Language) => void;
+  /** On pages other than the profile, where section links should lead. */
+  home?: string;
 }) {
   const text = copy[language];
-  const [active, setActive] = useState("profile");
+  const [active, setActive] = useState<string | null>(
+    home ? null : "profile",
+  );
   const nav = useRef<HTMLElement>(null);
   const switcher = useRef<HTMLDivElement>(null);
   const navIndicator = useIndicator(nav, '[aria-current="location"]', active);
@@ -87,7 +94,11 @@ export function SiteHeader({
   return (
     <header className="site-header">
       <div className="wrap site-header-inner">
-        <a className="site-mark" href="#profile" aria-label={text.top}>
+        <a
+          className="site-mark"
+          href={`${home ?? ""}#profile`}
+          aria-label={home ? text.profile : text.top}
+        >
           <span className="site-mark-full">Ryuta Shimogauchi</span>
           <span className="site-mark-short" aria-hidden="true">
             R.S.
@@ -97,7 +108,7 @@ export function SiteHeader({
           {sections.map((section) => (
             <a
               key={section.id}
-              href={`#${section.id}`}
+              href={`${home ?? ""}#${section.id}`}
               aria-current={active === section.id ? "location" : undefined}
               className={section.id === "profile" ? "nav-profile" : undefined}
             >

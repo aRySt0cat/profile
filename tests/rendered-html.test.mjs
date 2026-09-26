@@ -2,13 +2,13 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-async function render() {
+async function render(path = "/") {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
 
   return worker.fetch(
-    new Request("http://localhost/", {
+    new Request(`http://localhost${path}`, {
       headers: { accept: "text/html" },
     }),
     {
@@ -83,16 +83,32 @@ test("server-renders the complete profile", async () => {
   assert.doesNotMatch(html, /sculpture|open-book/);
 });
 
+test("renders a page for each talk with slides", async () => {
+  const response = await render("/talks/ml15min-116");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /<title>人生の操作権限をAIに渡してみた \| 下垣内 隆太<\/title>/);
+  assert.match(html, /<h1 class="talk-title">人生の操作権限をAIに渡してみた<\/h1>/);
+  assert.match(html, /class="talk-stage"/);
+  assert.match(html, /href="\/#talk-ml15min-116-2026"/);
+  assert.match(html, /machine-learning15minutes\.connpass\.com\/event\/403438/);
+
+  const profile = await (await render()).text();
+  assert.match(profile, /href="\/talks\/ml15min-116\/"/);
+});
+
 test("keeps activity content data-driven", async () => {
-  const [page, data, packageJson] = await Promise.all([
+  const [page, languageStore, data, packageJson] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/language.ts", import.meta.url), "utf8"),
     readFile(new URL("../src/data/activities.ts", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
   ]);
 
   assert.match(page, /<ActivitySection/);
-  assert.match(page, /useSyncExternalStore/);
-  assert.match(page, /profile-language/);
+  assert.match(page, /useLanguage/);
+  assert.match(languageStore, /useSyncExternalStore/);
+  assert.match(languageStore, /profile-language/);
   assert.match(data, /type: "book"/);
   assert.match(data, /type: "paper"/);
   assert.match(data, /type: "talk"/);

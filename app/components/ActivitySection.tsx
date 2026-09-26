@@ -18,6 +18,7 @@ import {
   localized,
   primaryLink,
   type ActivityFilter,
+  type ActivityLink,
 } from "../lib/activity";
 import { prefersReducedMotion } from "../lib/motion";
 import { transition } from "../lib/transition";
@@ -44,6 +45,10 @@ const copy = {
     cover: (title: string) => `Cover of ${title}`,
   },
 };
+
+/** Pages on this site open in place; other sites open in a new tab. */
+const linkTarget = (link: ActivityLink) =>
+  link.internal ? {} : { target: "_blank", rel: "noreferrer noopener" };
 
 function isSelf(name: string) {
   return name === "下垣内 隆太" || name === "Ryuta Shimogauchi";
@@ -123,10 +128,10 @@ function Work({
       <div className="work-body">
         <h3 className="work-title">
           {primary ? (
-            <a href={primary} target="_blank" rel="noreferrer noopener">
+            <a href={primary.href} {...linkTarget(primary)}>
               {title}
               <span className="arrow" aria-hidden="true">
-                ↗
+                {primary.internal ? "→" : "↗"}
               </span>
             </a>
           ) : (
@@ -168,17 +173,17 @@ function Work({
         )}
         {links.length > 0 && (
           <ul className="work-links" aria-label={`${title} — ${text.links}`}>
-            {links.map(([label, href]) => (
-              <li key={label}>
+            {links.map((link) => (
+              <li key={link.label}>
                 <a
                   className="quiet-link"
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer noopener"
+                  href={link.href}
+                  data-internal={link.internal ? "" : undefined}
+                  {...linkTarget(link)}
                 >
-                  <span>{label}</span>
+                  <span>{link.label}</span>
                   <span className="arrow" aria-hidden="true">
-                    ↗
+                    {link.internal ? "→" : "↗"}
                   </span>
                 </a>
               </li>

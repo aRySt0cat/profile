@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Slide decks built by `npm run slides`.
+    "public/slides/**",
+    ".slides-cache/**",
   ]),
 ]);
 
