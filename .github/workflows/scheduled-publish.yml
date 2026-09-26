@@ -1,0 +1,138 @@
+name: Scheduled publish (2026-09-26 14:50 JST)
+
+# Publishes the slidev-talks branch at the start of the ML15min #116 talk.
+# Scheduled runs often start several minutes late, so each run starts well
+# before 14:50, builds the site, and then waits; the second schedule is a
+# spare in case the first is dropped. Once published, main points at the
+# published commit and this workflow disables itself.
+
+on:
+  schedule:
+    # 05:10 and 05:30 UTC = 14:10 and 14:30 JST. Cron has no year field;
+    # the check job ignores runs outside the publishing window.
+    - cron: "10 5 26 9 *"
+    - cron: "30 5 26 9 *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Build only, without publishing"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+  actions: write
+
+concurrency:
+  group: scheduled-publish
+  cancel-in-progress: false
+
+env:
+  RELEASE_BRANCH: slidev-talks
+  PUBLISH_AT: "2026-09-26T05:50:00Z"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      publish: ${{ steps.guard.outputs.publish }}
+      commit: ${{ steps.guard.outputs.commit }}
+    steps:
+      - name: Check out the release branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_BRANCH }}
+          fetch-depth: 0
+
+      - name: Decide whether to publish
+        id: guard
+        run: |
+          commit=$(git rev-parse HEAD)
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+          closes=$(( $(date -u -d "$PUBLISH_AT" +%s) + 3 * 3600 ))
+          if [ "$(date -u +%s)" -gt "$closes" ]; then
+            echo "The publishing window has closed; nothing to do."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          elif git merge-base --is-ancestor "$commit" origin/main; then
+            echo "main already contains $commit; nothing to do."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          elif ! git merge-base --is-ancestor origin/main "$commit"; then
+            echo "::error::main has commits that $RELEASE_BRANCH lacks. Rebase $RELEASE_BRANCH onto main."
+            exit 1
+          else
+            echo "Will publish $commit at $PUBLISH_AT."
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    needs: check
+    if: needs.check.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the release
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.check.outputs.commit }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build static site
+        run: npm run build:pages
+        env:
+          SLIDES_REPO_TOKEN: ${{ secrets.SLIDES_REPO_TOKEN }}
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./out
+
+  publish:
+    needs: [check, build]
+    if: >-
+      needs.check.outputs.publish == 'true' &&
+      !(github.event_name == 'workflow_dispatch' && inputs.dry_run)
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Wait until 14:50 JST
+        run: |
+          wait=$(( $(date -u -d "$PUBLISH_AT" +%s) - $(date -u +%s) ))
+          if [ "$wait" -gt 0 ]; then
+            echo "Waiting ${wait}s until $PUBLISH_AT."
+            sleep "$wait"
+          fi
+
+      - name: Check out the release
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.check.outputs.commit }}
+          fetch-depth: 0
+
+      # A plain push only fast-forwards, so main is never rewritten. Pushes
+      # made with this token do not start the regular deploy workflow.
+      - name: Move main to the published commit
+        run: git push origin "${{ needs.check.outputs.commit }}:refs/heads/main"
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Disable this schedule
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow disable "${{ github.workflow }}" -R "${{ github.repository }}"
