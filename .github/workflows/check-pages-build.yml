@@ -1,0 +1,36 @@
+name: Check the Pages build
+
+# Builds the site exactly as the deploy does, without publishing it, so a
+# pull request shows whether every deck can be fetched and built before it
+# reaches main.
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Build static site and check the export
+        run: npm run test:pages
+        env:
+          SLIDES_REPO_TOKEN: ${{ secrets.SLIDES_REPO_TOKEN }}
