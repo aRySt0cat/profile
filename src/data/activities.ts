@@ -54,6 +54,26 @@ export type Activity = {
 
 const activityData: Activity[] = [
   {
+    id: "talk-wandb-cost-optimization-2026",
+    type: "talk",
+    sort_date: "2026-09-30",
+    display_date: "2026年9月30日",
+    display_date_en: "September 30, 2026",
+    title: "ハーネスに学ぶコスト最適化",
+    title_en: "What Coding-Agent Harnesses Teach About Cost Optimization",
+    subtitle: "コーディングエージェントは、どこでトークンを使い、どこで節約しているか",
+    subtitle_en: "Where Coding Agents Spend Tokens, and Where They Save Them",
+    event: "AI Agent / Coding Agentのコスト最適化手法キャッチアップ",
+    event_en: "Catching Up on Cost-Optimization Techniques for AI Agents and Coding Agents",
+    event_url: "https://wandb.connpass.com/event/404454/",
+    deck: {
+      slug: "wandb-cost-optimization",
+      repo: "aRySt0cat/wandb-slide-20260930",
+      ref: "7182eea1176446f265eb08b2912650e0a64eb1e5",
+      entry: "talk.md",
+    },
+  },
+  {
     id: "talk-ml15min-116-2026",
     type: "talk",
     sort_date: "2026-09-26",
